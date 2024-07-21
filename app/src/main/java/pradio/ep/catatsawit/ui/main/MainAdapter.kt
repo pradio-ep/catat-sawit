@@ -9,14 +9,14 @@ import android.widget.Filterable
 import androidx.recyclerview.widget.RecyclerView
 import pradio.ep.catatsawit.R
 import pradio.ep.catatsawit.databinding.ItemRowBinding
-import pradio.ep.catatsawit.domain.model.Note
+import pradio.ep.catatsawit.data.model.Note
 import pradio.ep.catatsawit.ui.detail.DetailActivity
 
 class MainAdapter(private val context: Context) :
     RecyclerView.Adapter<MainAdapter.ViewHolder>(), Filterable {
 
-    private var items = mutableListOf<Pair<String, Note>>()
-    private var filterItems = mutableListOf<Pair<String, Note>>()
+    private var items = mutableListOf<Note>()
+    private var filterItems = mutableListOf<Note>()
 
     init {
         filterItems = items
@@ -25,16 +25,16 @@ class MainAdapter(private val context: Context) :
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val binding: ItemRowBinding = ItemRowBinding.bind(itemView)
 
-        fun bind(data: Pair<String, Note>) {
+        fun bind(data: Note) {
             binding.apply {
-                tvDriver.text = data.second.driver
-                tvLicense.text = data.second.license
-                tvDate.text = data.second.date
-                tvNetWeight.text = Note.netWeight(data.second.inbound, data.second.outbound) + " Ton"
+                tvDriver.text = data.driver
+                tvLicense.text = data.license
+                tvDate.text = data.date
+                tvNetWeight.text = Note.netWeight(data.inbound, data.outbound) + " Ton"
             }
             with(itemView) {
                 setOnClickListener {
-                    DetailActivity.navigate(context, data.first, data.second)
+                    DetailActivity.navigate(context, data)
                 }
             }
         }
@@ -46,7 +46,7 @@ class MainAdapter(private val context: Context) :
         )
     }
 
-    fun setItems(data: MutableList<Pair<String, Note>>) {
+    fun setItems(data: MutableList<Note>) {
         this.items = data
         this.filterItems = data
         notifyDataSetChanged()
@@ -69,13 +69,13 @@ class MainAdapter(private val context: Context) :
             override fun performFiltering(constraint: CharSequence?): FilterResults {
                 val charSearch = constraint.toString()
                 if (charSearch.isEmpty()) {
-                    filterItems = items as ArrayList<Pair<String, Note>>
+                    filterItems = items as ArrayList<Note>
                 } else {
-                    val resultList = ArrayList<Pair<String, Note>>()
+                    val resultList = ArrayList<Note>()
                     for (row in items) {
-                        if (row.second.date?.lowercase()?.contains(constraint.toString().lowercase()) == true ||
-                            row.second.driver?.lowercase()?.contains(constraint.toString().lowercase()) == true ||
-                            row.second.license?.lowercase()?.contains(constraint.toString().lowercase()) == true) {
+                        if (row.date?.lowercase()?.contains(constraint.toString().lowercase()) == true ||
+                            row.driver?.lowercase()?.contains(constraint.toString().lowercase()) == true ||
+                            row.license?.lowercase()?.contains(constraint.toString().lowercase()) == true) {
                             resultList.add(row)
                         }
                     }
@@ -87,7 +87,7 @@ class MainAdapter(private val context: Context) :
             }
 
             override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
-                filterItems = results?.values as ArrayList<Pair<String, Note>>
+                filterItems = results?.values as ArrayList<Note>
                 notifyDataSetChanged()
             }
         }

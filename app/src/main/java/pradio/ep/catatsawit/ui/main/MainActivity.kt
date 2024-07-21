@@ -6,21 +6,20 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.ValueEventListener
-import com.google.firebase.database.getValue
 import pradio.ep.catatsawit.R
 import pradio.ep.catatsawit.databinding.ActivityMainBinding
-import pradio.ep.catatsawit.domain.model.Note
+import pradio.ep.catatsawit.data.model.Note
 import pradio.ep.catatsawit.ui.input.InputActivity
 import androidx.activity.viewModels
+import com.google.firebase.database.FirebaseDatabase
+import dagger.hilt.android.AndroidEntryPoint
 import pradio.ep.catatsawit.util.state.ConnectionState
+import pradio.ep.catatsawit.util.state.SortingState
+import javax.inject.Inject
 
-
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     companion object {
@@ -34,7 +33,7 @@ class MainActivity : AppCompatActivity() {
 
     private val viewModel: MainViewModel by viewModels()
 
-    private val items = mutableListOf<Pair<String, Note>>()
+    private val items = mutableListOf<Note>()
 
     private val mainAdapter: MainAdapter by lazy {
         MainAdapter(this)
@@ -44,23 +43,8 @@ class MainActivity : AppCompatActivity() {
         ActivityMainBinding.inflate(layoutInflater)
     }
 
-    private val noteListener = object : ValueEventListener {
-        override fun onDataChange(dataSnapshot: DataSnapshot) {
-            mainAdapter.clearItems()
-            val notes = dataSnapshot.children
-            notes.forEach {
-                it.getValue<Note>()?.let { note ->
-                    it.key?.let { key ->
-                        items.add(Pair(key, note))
-                    }
-                }
-            }
-            mainAdapter.setItems(items)
-        }
-        override fun onCancelled(databaseError: DatabaseError) {
-            Log.w("Listener", "onCancelled", databaseError.toException())
-        }
-    }
+    @Inject
+    lateinit var firebaseDatabase: FirebaseDatabase
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,9 +53,6 @@ class MainActivity : AppCompatActivity() {
         setupToolbar()
         setupView()
         setupObserver()
-
-        viewModel.getData(noteListener)
-        viewModel.getConnectionStatus()
     }
 
     private fun setupToolbar() {
@@ -93,13 +74,14 @@ class MainActivity : AppCompatActivity() {
                 }
                 override fun afterTextChanged(editable: Editable?) {}
             })
-            radioSortBy.setOnCheckedChangeListener { group, checkedId ->
+            radioSortBy.setOnCheckedChangeListener { _, checkedId ->
                 when (checkedId) {
-                    R.id.radioDate -> { viewModel.getData(noteListener) }
-                    R.id.radioDriver -> { viewModel.getDataSortByDriver(noteListener) }
-                    R.id.radioLicense -> { viewModel.getDataSortByLicense(noteListener) }
+                    R.id.radioDate -> viewModel.setSorting(SortingState.Date)
+                    R.id.radioDriver -> viewModel.setSorting(SortingState.Driver)
+                    R.id.radioLicense -> viewModel.setSorting(SortingState.License)
                 }
             }
+            radioDate.performClick()
             rvInput.apply {
                 layoutManager =
                     LinearLayoutManager(this@MainActivity, LinearLayoutManager.VERTICAL, false)
@@ -113,21 +95,32 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupObserver() {
         with(viewModel) {
-            connectionState.observe(this@MainActivity) { connection ->
+            getConnectionStatus().observe(this@MainActivity) { connection ->
                 if (connection is ConnectionState.Online) {
                     binding.tvStatus.apply {
                         text = "Online"
                         setTextColor(getColor(R.color.green))
                     }
-                    Log.d("Status", "Online")
                 } else {
                     binding.tvStatus.apply {
                         text = "Offline"
                         setTextColor(getColor(R.color.red))
                     }
-                    Log.d("Status", "Offline")
+                }
+            }
+            sortingState.observe(this@MainActivity) { sorting ->
+                when (sorting) {
+                    SortingState.Date -> viewModel.getNotes().observe(this@MainActivity) { updateList(it) }
+                    SortingState.Driver -> viewModel.getNotesByDriver().observe(this@MainActivity) { updateList(it) }
+                    SortingState.License -> viewModel.getNotesByLicense().observe(this@MainActivity) { updateList(it) }
                 }
             }
         }
+    }
+
+    private fun updateList(list: List<Note>) {
+        mainAdapter.clearItems()
+        mainAdapter.setItems(list.toMutableList())
+        firebaseDatabase.reference.setValue(list)
     }
 }

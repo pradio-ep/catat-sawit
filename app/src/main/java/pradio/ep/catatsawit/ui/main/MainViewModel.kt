@@ -1,56 +1,40 @@
 package pradio.ep.catatsawit.ui.main
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.google.firebase.Firebase
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
-import com.google.firebase.database.database
-import pradio.ep.catatsawit.Const
+import dagger.hilt.android.lifecycle.HiltViewModel
+import pradio.ep.catatsawit.data.model.Note
+import pradio.ep.catatsawit.repository.NoteRepository
 import pradio.ep.catatsawit.util.state.ConnectionState
+import pradio.ep.catatsawit.util.state.SortingState
+import javax.inject.Inject
 
-class MainViewModel : ViewModel() {
+@HiltViewModel
+class MainViewModel @Inject constructor(
+    private val repo: NoteRepository
+) : ViewModel() {
 
-    private val _connectionState = MutableLiveData<ConnectionState>()
-    val connectionState: LiveData<ConnectionState> = _connectionState
+    private val _sortingState = MutableLiveData<SortingState>()
+    val sortingState: LiveData<SortingState> = _sortingState
 
-    private val database: FirebaseDatabase by lazy {
-        Firebase.database
+    fun getConnectionStatus(): LiveData<ConnectionState> {
+        return repo.getConnectionStatus()
     }
 
-    fun getData(listener: ValueEventListener) {
-        val noteRefByKey = database.getReference(Const.NOTE).orderByKey()
-        noteRefByKey.addValueEventListener(listener)
+    fun setSorting(sortingState: SortingState) {
+        _sortingState.value = sortingState
     }
 
-    fun getDataSortByDriver(listener: ValueEventListener) {
-        val noteRefByDriver = database.getReference(Const.NOTE).orderByChild(Const.DRIVER)
-        noteRefByDriver.addValueEventListener(listener)
+    fun getNotes(): LiveData<List<Note>> {
+        return repo.getAllNotes()
     }
 
-    fun getDataSortByLicense(listener: ValueEventListener) {
-        val noteRefByLicense = database.getReference(Const.NOTE).orderByChild(Const.LICENSE)
-        noteRefByLicense.addValueEventListener(listener)
+    fun getNotesByDriver(): LiveData<List<Note>> {
+        return repo.getAllNotesByDriver()
     }
 
-    fun getConnectionStatus() {
-        val connectedRef = Firebase.database.getReference(".info/connected")
-        connectedRef.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val connected = snapshot.getValue(Boolean::class.java) ?: false
-                if (connected) {
-                    _connectionState.value = ConnectionState.Online
-                } else {
-                    _connectionState.value = ConnectionState.Offline
-                }
-            }
-            override fun onCancelled(error: DatabaseError) {
-                Log.w("Connection", "Listener was cancelled")
-            }
-        })
+    fun getNotesByLicense(): LiveData<List<Note>> {
+        return repo.getAllNotesByLicense()
     }
 }

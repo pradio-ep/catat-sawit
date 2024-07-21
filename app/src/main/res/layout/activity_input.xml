@@ -16,7 +16,6 @@
             android:layout_weight="0.3"
             android:layout_margin="4dp"
             android:textSize="16sp"
-            android:textColor="@color/black"
             android:text="Tanggal"/>
         <TextView
             android:layout_width="0dp"
@@ -36,10 +35,8 @@
                 android:id="@+id/etDate"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:hint="ex: 30-01-2024"
-                android:inputType="text"
+                android:enabled="false"
                 android:maxLines="1"
-                android:textColorHint="#757575"
                 tools:ignore="TextContrastCheck" />
         </com.google.android.material.textfield.TextInputLayout>
     </LinearLayout>
@@ -54,7 +51,6 @@
             android:layout_weight="0.3"
             android:layout_margin="4dp"
             android:textSize="16sp"
-            android:textColor="@color/black"
             android:text="Pengemudi"/>
         <TextView
             android:layout_width="0dp"
@@ -92,7 +88,6 @@
             android:layout_weight="0.3"
             android:layout_margin="4dp"
             android:textSize="16sp"
-            android:textColor="@color/black"
             android:text="Plat Nomor"/>
         <TextView
             android:layout_width="0dp"
@@ -130,7 +125,6 @@
             android:layout_weight="0.3"
             android:layout_margin="4dp"
             android:textSize="16sp"
-            android:textColor="@color/black"
             android:text="Inbound"/>
         <TextView
             android:layout_width="0dp"
@@ -168,7 +162,6 @@
             android:layout_weight="0.3"
             android:layout_margin="4dp"
             android:textSize="16sp"
-            android:textColor="@color/black"
             android:text="Outbound"/>
         <TextView
             android:layout_width="0dp"
@@ -206,7 +199,6 @@
             android:layout_weight="0.3"
             android:layout_margin="4dp"
             android:textSize="16sp"
-            android:textColor="@color/black"
             android:text="Net Weight"/>
         <TextView
             android:layout_width="0dp"

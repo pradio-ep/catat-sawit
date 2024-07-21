@@ -2,17 +2,24 @@ package pradio.ep.catatsawit.ui.input
 
 import androidx.lifecycle.ViewModel
 import com.google.firebase.Firebase
+import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.database
+import dagger.hilt.android.lifecycle.HiltViewModel
 import pradio.ep.catatsawit.Const
-import pradio.ep.catatsawit.domain.model.Note
+import pradio.ep.catatsawit.data.model.Note
+import pradio.ep.catatsawit.repository.NoteRepository
+import javax.inject.Inject
 
-class InputViewModel: ViewModel() {
+@HiltViewModel
+class InputViewModel @Inject constructor(
+    private val repo: NoteRepository
+): ViewModel() {
 
-    fun saveData(key: String?, inputNote: Note) {
-        val database = Firebase.database
-        val noteRef = database.getReference(Const.NOTE)
+    fun saveNote(note: Note) {
+        repo.insert(note)
+    }
 
-        if (key != null) noteRef.child(key).setValue(inputNote)
-        else noteRef.push().setValue(inputNote)
+    fun updateNote(note: Note) {
+        repo.update(note)
     }
 }
