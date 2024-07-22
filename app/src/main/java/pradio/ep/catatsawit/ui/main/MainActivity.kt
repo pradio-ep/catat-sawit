@@ -13,8 +13,11 @@ import pradio.ep.catatsawit.databinding.ActivityMainBinding
 import pradio.ep.catatsawit.data.model.Note
 import pradio.ep.catatsawit.ui.input.InputActivity
 import androidx.activity.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.google.firebase.database.FirebaseDatabase
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import pradio.ep.catatsawit.util.state.ConnectionState
 import pradio.ep.catatsawit.util.state.SortingState
 import javax.inject.Inject
@@ -32,8 +35,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private val viewModel: MainViewModel by viewModels()
-
-    private val items = mutableListOf<Note>()
 
     private val mainAdapter: MainAdapter by lazy {
         MainAdapter(this)
@@ -109,10 +110,12 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             sortingState.observe(this@MainActivity) { sorting ->
-                when (sorting) {
-                    SortingState.Date -> viewModel.getNotes().observe(this@MainActivity) { updateList(it) }
-                    SortingState.Driver -> viewModel.getNotesByDriver().observe(this@MainActivity) { updateList(it) }
-                    SortingState.License -> viewModel.getNotesByLicense().observe(this@MainActivity) { updateList(it) }
+                lifecycleScope.launch {
+                    when (sorting) {
+                        SortingState.Date -> viewModel.getNotes().collectLatest { updateList(it) }
+                        SortingState.Driver -> viewModel.getNotesByDriver().collectLatest { updateList(it) }
+                        SortingState.License -> viewModel.getNotesByLicense().collectLatest { updateList(it) }
+                    }
                 }
             }
         }

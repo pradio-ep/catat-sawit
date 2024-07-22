@@ -1,7 +1,7 @@
 package pradio.ep.catatsawit.data.dao
 
-import androidx.lifecycle.LiveData
 import androidx.room.*
+import kotlinx.coroutines.flow.Flow
 import pradio.ep.catatsawit.data.model.Note
 
 @Dao
@@ -16,12 +16,15 @@ interface NoteDao {
     @Delete
     fun delete(note: Note)
 
+    @Query("SELECT * FROM `tbl_note` where id = :id")
+    suspend fun getNoteDetail(id: String): Note
+
     @Query("SELECT * FROM tbl_note")
-    fun getAllNotes(): LiveData<List<Note>>
+    fun getAllNotes(): Flow<List<Note>>
 
     @Query("SELECT * FROM tbl_note ORDER BY driver")
-    fun getAllNotesByDriver(): LiveData<List<Note>>
+    fun getAllNotesByDriver(): Flow<List<Note>>
 
     @Query("SELECT * FROM tbl_note ORDER BY license")
-    fun getAllNotesByLicense(): LiveData<List<Note>>
+    fun getAllNotesByLicense(): Flow<List<Note>>
 }

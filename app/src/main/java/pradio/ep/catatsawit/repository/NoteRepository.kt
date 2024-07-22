@@ -1,6 +1,5 @@
 package pradio.ep.catatsawit.repository
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.firebase.Firebase
 import com.google.firebase.database.DataSnapshot
@@ -9,6 +8,7 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import pradio.ep.catatsawit.data.dao.NoteDao
 import pradio.ep.catatsawit.data.model.Note
@@ -55,15 +55,15 @@ class NoteRepository @Inject constructor(
         }
     }
 
-    fun getAllNotes(): LiveData<List<Note>> {
+    fun getAllNotes(): Flow<List<Note>> {
         return noteDao.getAllNotes()
     }
 
-    fun getAllNotesByDriver(): LiveData<List<Note>> {
+    fun getAllNotesByDriver(): Flow<List<Note>> {
         return noteDao.getAllNotesByDriver()
     }
 
-    fun getAllNotesByLicense(): LiveData<List<Note>> {
+    fun getAllNotesByLicense(): Flow<List<Note>> {
         return noteDao.getAllNotesByLicense()
     }
 }
